@@ -1,0 +1,11 @@
+services:
+  blazor-api:
+    container_name: blazor-api
+    build: .\BlazorApp.Api
+  blazor-app:
+    container_name: blazor-app
+    build: .\BlazorApp
+    depends_on:
+      - blazor-api
+    ports:
+      - 80:80
