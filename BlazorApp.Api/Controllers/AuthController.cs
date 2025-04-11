@@ -22,6 +22,12 @@ public class AuthController : ControllerBase
         _users = users;
     }
 
+    [HttpGet]
+    public IActionResult Get()
+    {
+        return Ok(_users);
+    }
+
     [HttpPost("login")]
     public IActionResult Login(LoginDto dto)
     {

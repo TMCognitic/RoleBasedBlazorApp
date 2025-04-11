@@ -1,0 +1,91 @@
+﻿@page "/login"
+
+@inject IAuthRepository _authRepository
+@inject IJSRuntime js
+@inject AuthenticationStateProvider _authStateProvider
+@inject NavigationManager navManager
+@inject IHttpClientFactory clientFactory
+
+@if (users is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h3 class="align-content-center">All passwords are : Test1234=</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom complet</th>
+                <th>Email</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (User user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.NomComplet</td>
+                    <td>@user.Email</td>
+                    <td>@user.Role</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="row">
+    <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
+        <div class="mb-3 text-center">
+            <h3>LOGIN</h3>
+        </div>
+        <div class="mb-3">
+            <label>User Name</label>
+            <input @bind="model.Email" class="form-control" placeholder="Email" />
+        </div>
+        <div class="mb-3">
+            <label>Password</label>
+            <input @bind="model.Passwd" type="password" class="form-control" placeholder="Password" />
+        </div>
+        <div class="mb-3 d-grid gap-2">
+            <button @onclick="Authenticate" class="btn btn-primary">Login</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private class LoginModel
+    {
+        public string Email { get; set; } = "";
+        public string Passwd { get; set; } = "";
+    }
+
+    private LoginModel model = new LoginModel();
+
+    private User[]? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using (HttpClient client = clientFactory.CreateClient("Api"))
+        {
+            users = await client.GetFromJsonAsync<User[]>("auth");
+        }
+    }
+
+    private async Task Authenticate()
+    {
+        IQueryResult<User> result = await _authRepository.ExecuteAsync(new LoginQuery(model.Email, model.Passwd));
+        
+        if (result.IsFailure)
+        {
+            await js.InvokeVoidAsync("alert", "Invalid User Name or Password");
+            return;
+        }
+
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)_authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(result.Content!);
+        navManager.NavigateTo("/", true);
+    }
+}

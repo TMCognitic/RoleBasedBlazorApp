@@ -2,6 +2,8 @@ services:
   blazor-api:
     container_name: blazor-api
     build: .\BlazorApp.Api
+    ports:
+      - 8080:8080
   blazor-app:
     container_name: blazor-app
     build: .\BlazorApp

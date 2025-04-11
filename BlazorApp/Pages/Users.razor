@@ -1,0 +1,51 @@
+﻿@page "/users"
+
+@inject IHttpClientFactory clientFactory
+@attribute [Authorize(Roles="Admin")]
+
+<PageTitle>Users</PageTitle>
+
+<h1>Users</h1>
+
+<p>This component is only for Admin</p>
+
+@if (users is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom complet</th>
+                <th>Email</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (User user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.NomComplet</td>
+                    <td>@user.Email</td>
+                    <td>@user.Role</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private User[]? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using(HttpClient client = clientFactory.CreateClient("Api"))
+        {
+            users = await client.GetFromJsonAsync<User[]>("auth");            
+        }
+    }
+}
